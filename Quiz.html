@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz do Meio Ambiente</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #e2f0d9; padding: 20px; }
+        .quiz-container { background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-opcao { display: block; width: 100%; padding: 10px; margin: 10px 0; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-opcao:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h2>Quiz Eco-Herói 🌍</h2>
+    <h3 id="pergunta">Carregando pergunta...</h3>
+    <div id="opcoes"></div>
+</div>
+
+<script>
+    const perguntas = [
+        { q: "Qual lixo deve ser descartado na lixeira azul?", o: ["Plástico", "Papel", "Vidro", "Metal"], a: 1 },
+        { q: "Quanto tempo uma garrafa PET pode levar para se decompor?", o: ["10 anos", "100 anos", "Mais de 400 anos", "1 ano"], a: 2 },
+        { q: "Qual dessas ações ajuda a poupar água?", o: ["Escovar dentes com a torneira aberta", "Lavar calçada com mangueira", "Reduzir o tempo no banho", "Deixar torneira pingando"], a: 2 }
+    ];
+
+    let indiceAtual = 0;
+
+    function carregarPergunta() {
+        if (indiceAtual >= perguntas.length) {
+            document.getElementById('quiz-container').innerHTML = "<h2>🎉 Parabéns! Você concluiu o Quiz!</h2>";
+            return;
+        }
+
+        let item = perguntas[indiceAtual];
+        document.getElementById('pergunta').innerText = item.q;
+        
+        let containerOpcoes = document.getElementById('opcoes');
+        containerOpcoes.innerHTML = '';
+
+        item.o.forEach((opcao, index) => {
+            let botao = document.createElement('button');
+            botao.className = 'btn-opcao';
+            botao.innerText = opacity = opcao;
+            botao.onclick = () => verificarResposta(index);
+            containerOpcoes.appendChild(botao);
+        });
+    }
+
+    function verificarResposta(escolha) {
+        if (escolha === perguntas[indiceAtual].a) {
+            alert("Acertou! 🎉");
+            indiceAtual++;
+            carregarPergunta();
+        } else {
+            alert("Errou! Tente outra alternativa. ❌");
+        }
+    }
+
+    carregarPergunta();
+</script>
+
+</body>
+</html>

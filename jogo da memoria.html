@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Game - English</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #fff5e6; }
+        .grid { display: grid; grid-template-columns: repeat(4, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
+        .card { width: 100px; height: 100px; background: #ff9933; font-size: 36px; display: flex; align-items: center; justify-content: center; color: transparent; border-radius: 8px; cursor: pointer; user-select: none; }
+        .flipped { background: white; color: black; border: 2px solid #ff9933; }
+    </style>
+</head>
+<body>
+
+<h2>Jogo da Memória: Animais em Inglês 🦁</h2>
+<p>Encontre os pares correspondentes!</p>
+<div class="grid" id="tabuleiro"></div>
+
+<script>
+    const cartasOriginais = ['🐶', '🐶', '🐱', '🐱', '🦁', '🦁', '🐵', '🐵', '🐸', '🐸', '🦊', '🦊'];
+    // Embaralha as cartas
+    const cartas = cartasOriginais.sort(() => Math.random() - 0.5);
+
+    let primeiraCarta = null;
+    let segundaCarta = null;
+    let travado = false;
+
+    const tabuleiro = document.getElementById('tabuleiro');
+
+    cartas.forEach((emoji, index) => {
+        const elementoCard = document.createElement('div');
+        elementoCard.classList.add('card');
+        elementoCard.dataset.emoji = emoji;
+        elementoCard.innerText = emoji;
+        elementoCard.addEventListener('click', virarCarta);
+        tabuleiro.appendChild(elementoCard);
+    });
+
+    function virarCarta() {
+        if (travado || this === primeiraCarta) return;
+
+        this.classList.add('flipped');
+
+        if (!primeiraCarta) {
+            primeiraCarta = this;
+            return;
+        }
+
+        segundaCarta = this;
+        verificarPar();
+    }
+
+    function verificarPar() {
+        let eIgual = primeiraCarta.dataset.emoji === segundaCarta.dataset.emoji;
+        eIgual ? desativarCartas() : desvirarCartas();
+    }
+
+    function desativarCartas() {
+        primeiraCarta.removeEventListener('click', virarCarta);
+        segundaCarta.removeEventListener('click', virarCarta);
+        resetarTurno();
+    }
+
+    function desvirarCartas() {
+        travado = true;
+        setTimeout(() => {
+            primeiraCarta.classList.remove('flipped');
+            segundaCarta.classList.remove('flipped');
+            resetarTurno();
+        }, 1000);
+    }
+
+    function resetarTurno() {
+        [primeiraCarta, segundaCarta] = [null, null];
+        travado = false;
+    }
+</script>
+
+</body>
+</html>
