@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio da Tabuada 🧮</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* ===== Telas ===== */
+        .tela {
+            display: none;
+            width: 100%;
+            max-width: 560px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tela.ativa { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 22px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        /* ===== Menu inicial ===== */
+        .logo { font-size: 4rem; margin-bottom: 10px; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #4a148c;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitulo {
+            color: #777;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        /* ===== Botões ===== */
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-iniciar {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            font-size: 1.2rem;
+            padding: 16px 40px;
+        }
+
+        .btn-reiniciar { background: linear-gradient(145deg, #f39c12, #e67e22); }
+        .btn-sair      { background: linear-gradient(145deg, #ef5350, #c62828); }
+        .btn-voltar    { background: linear-gradient(145deg, #95a5a6, #7f8c8d); }
+        .btn-enviar    { background: linear-gradient(145deg, #28a745, #1e7e34); }
+
+        /* ===== Dificuldades ===== */
+        .dificuldades {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-dificuldade {
+            padding: 20px 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s;
+            color: white;
+        }
+
+        .btn-dificuldade:hover { transform: translateY(-5px); }
+
+        .btn-facil   { background: linear-gradient(145deg, #4caf50, #2e7d32); }
+        .btn-medio   { background: linear-gradient(145deg, #ff9800, #e65100); }
+        .btn-dificil { background: linear-gradient(145deg, #f44336, #b71c1c); }
+
+        .btn-dificuldade .emoji { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+        .btn-dificuldade .nome  { font-size: 1rem; }
+        .btn-dificuldade .desc  { font-size: 0.75rem; opacity: 0.9; margin-top: 4px; font-weight: normal; }
+
+        /* ===== Jogo ===== */
+        .topo-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .topo-info span { display: flex; align-items: center; gap: 5px; }
+
+        #conta {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #4a148c;
+            margin: 20px 0;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entrada {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        #resposta {
+            font-size: 1.8rem;
+            width: 140px;
+            text-align: center;
+            padding: 10px;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            transition: border 0.25s;
+            font-weight: bold;
+            color: #4a148c;
+        }
+
+        #resposta:focus { outline: none; border-color: #667eea; }
+
+        #mensagem {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 30px;
+            transition: all 0.3s;
+        }
+
+        #mensagem.ok  { color: #28a745; }
+        #mensagem.err { color: #ef5350; animation: shake 0.4s; }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Barra de acertos */
+        .barra-acertos {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin: 20px 0 10px;
+        }
+
+        .barra-acertos .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #66bb6a, #2e7d32);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== Botões de ação no jogo ===== */
+        .acoes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .acoes .btn { padding: 10px 20px; font-size: 0.95rem; }
+
+        /* ===== Tela de saída ===== */
+        .tela-saida-card {
+            background: linear-gradient(135deg, #764ba2, #4a148c);
+            color: white;
+            padding: 50px 30px;
+            border-radius: 22px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .tela-saida-card h1 {
+            color: white;
+            -webkit-text-fill-color: white;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+        }
+
+        .tela-saida-card p { margin-bottom: 25px; font-size: 1.1rem; }
+
+        /* ===== Responsivo ===== */
+        @media (max-width: 500px) {
+            .card { padding: 25px 18px; }
+            h1 { font-size: 1.5rem; }
+            #conta { font-size: 2.5rem; }
+            .dificuldades { grid-template-columns: 1fr; }
+            #resposta { font-size: 1.5rem; width: 110px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TELA 1: MENU INICIAL ===== -->
+    <div class="tela ativa" id="telaMenu">
+        <div class="card">
+            <div class="logo">🧮</div>
+            <h1>Jogo da Tabuada</h1>
+            <p class="subtitulo">Teste suas habilidades matemáticas!</p>
+            <button class="btn btn-iniciar" onclick="irParaDificuldade()">▶️ Iniciar</button>
+        </div>
+    </div>
+
+    <!-- ===== TELA 2: ESCOLHER DIFICULDADE ===== -->
+    <div class="tela" id="telaDificuldade">
+        <div class="card">
+            <h1>Escolha a Dificuldade</h1>
+            <p class="subtitulo">Quanto maior, mais desafiador!</p>
+            <div class="dificuldades">
+                <button class="btn-dificuldade btn-facil" onclick="escolherDificuldade('facil')">
+                    <span class="emoji">😊</span>
+                    <span class="nome">Fácil</span>
+                    <div class="desc">Tabuada 1 a 5</div>
+                </button>
+                <button class="btn-dificuldade btn-medio" onclick="escolherDificuldade('medio')">
+                    <span class="emoji">😎</span>
+                    <span class="nome">Médio</span>
+                    <div class="desc">Tabuada 1 a 9</div>
+                </button>
+                <button class="btn-dificuldade btn-dificil" onclick="escolherDificuldade('dificil')">
+                    <span class="emoji">🔥</span>
+                    <span class="nome">Difícil</span>
+                    <div class="desc">Tabuada 1 a 12</div>
+                </button>
+            </div>
+            <div class="acoes">
+                <button class="btn btn-voltar" onclick="voltarAoMenu()">⬅️ Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TELA 3: JOGO ===== -->
+    <div class="tela" id="telaJogo">
+        <div class="card">
+            <div class="topo-info">
+                <span>🎚️ <span id="nivelLabel">Fácil</span></span>
+                <span>✅ <span id="acertos">0</span> acertos</span>
+                <span>❌ <span id="erros">0</span> erros</span>
+            </div>
+
+            <div id="conta">0 × 0</div>
+
+            <div class="entrada">
+                <input type="number" id="resposta" placeholder="?" inputmode="numeric">
+                <button class="btn btn-enviar" onclick="verificar()">Enviar</button>
+            </div>
+
+            <div id="mensagem"></div>
+
+            <div class="barra-acertos">
+                <div class="fill" id="barraFill"></div>
+            </div>
+
+            <div class="acoes">
+                <button class="btn btn-reiniciar" onclick="reiniciarJogo()">🔄 Reiniciar</button>
+                <button class="btn btn-sair" onclick="sairDoJogo()">🚪 Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TELA 4: SAÍDA ===== -->
+    <div class="tela" id="telaSaida">
+        <div class="tela-saida-card">
+            <h1>👋 Até logo!</h1>
+            <p>Obrigado por treinar sua tabuada. Volte sempre! 🧮</p>
+            <button class="btn btn-voltar" onclick="voltarAoMenu()">🏠 Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== Configuração de níveis =====
+        const niveis = {
+            facil:   { nome: 'Fácil',   max: 5,  label: '1 a 5'  },
+            medio:   { nome: 'Médio',   max: 9,  label: '1 a 9'  },
+            dificil: { nome: 'Difícil', max: 12, label: '1 a 12' }
+        };
+
+        // ===== Estado =====
+        let nivelAtual       = 'facil';
+        let num1, num2, resultadoCorreto;
+        let acertos = 0;
+        let erros = 0;
+        let travado = false;
+
+        // ===== Elementos =====
+        const telas = {
+            menu:        document.getElementById('telaMenu'),
+            dificuldade: document.getElementById('telaDificuldade'),
+            jogo:        document.getElementById('telaJogo'),
+            saida:       document.getElementById('telaSaida')
+        };
+
+        const elConta      = document.getElementById('conta');
+        const elResposta   = document.getElementById('resposta');
+        const elMensagem   = document.getElementById('mensagem');
+        const elAcertos    = document.getElementById('acertos');
+        const elErros      = document.getElementById('erros');
+        const elNivelLabel = document.getElementById('nivelLabel');
+        const elBarraFill  = document.getElementById('barraFill');
+
+        // ===== Navegação de telas =====
+        function mostrarTela(nome) {
+            Object.values(telas).forEach(t => t.classList.remove('ativa'));
+            telas[nome].classList.add('ativa');
+        }
+
+        function irParaDificuldade() {
+            mostrarTela('dificuldade');
+        }
+
+        function voltarAoMenu() {
+            mostrarTela('menu');
+        }
+
+        // ===== Escolher dificuldade =====
+        function escolherDificuldade(nivel) {
+            nivelAtual = nivel;
+            elNivelLabel.textContent = niveis[nivel].nome;
+            acertos = 0;
+            erros = 0;
+            atualizarPlacar();
+            mostrarTela('jogo');
+            gerarConta();
+        }
+
+        // ===== Gerar conta =====
+        function gerarConta() {
+            travado = false;
+            const max = niveis[nivelAtual].max;
+            num1 = Math.floor(Math.random() * max) + 1;
+            num2 = Math.floor(Math.random() * max) + 1;
+            resultadoCorreto = num1 * num2;
+
+            elConta.textContent = `${num1} × ${num2}`;
+            elResposta.value = '';
+            elMensagem.textContent = '';
+            elMensagem.className = '';
+            elResposta.focus();
+        }
+
+        // ===== Verificar resposta =====
+        function verificar() {
+            if (travado) return;
+
+            const valor = elResposta.value.trim();
+            if (valor === '') {
+                elMensagem.textContent = '⚠️ Digite um número!';
+                elMensagem.className = 'err';
+                return;
+            }
+
+            const respostaUsuario = parseInt(valor);
+
+            if (respostaUsuario === resultadoCorreto) {
+                acertos++;
+                elMensagem.textContent = `✅ Correto! ${num1} × ${num2} = ${resultadoCorreto}`;
+                elMensagem.className = 'ok';
+                travado = true;
+                atualizarPlacar();
+                setTimeout(gerarConta, 1200);
+            } else {
+                erros++;
+                elMensagem.textContent = `❌ Errou! Tente novamente.`;
+                elMensagem.className = 'err';
+                atualizarPlacar();
+                elResposta.select();
+            }
+        }
+
+        // ===== Placar e barra =====
+        function atualizarPlacar() {
+            elAcertos.textContent = acertos;
+            elErros.textContent = erros;
+
+            const total = acertos + erros;
+            const porcentagem = total === 0 ? 0 : (acertos / total) * 100;
+            elBarraFill.style.width = `${porcentagem}%`;
+        }
+
+        // ===== Botões =====
+        function reiniciarJogo() {
+            acertos = 0;
+            erros = 0;
+            atualizarPlacar();
+            elMensagem.textContent = '';
+            elMensagem.className = '';
+            gerarConta();
+        }
+
+        function sairDoJogo() {
+            mostrarTela('saida');
+        }
+
+        // ===== Enter para enviar =====
+        elResposta.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verificar();
+        });
+    </script>
+
+</body>
+</html>

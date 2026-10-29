@@ -2,79 +2,515 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Memory Game - English</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game - Animais em Inglês</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #fff5e6; }
-        .grid { display: grid; grid-template-columns: repeat(4, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
-        .card { width: 100px; height: 100px; background: #ff9933; font-size: 36px; display: flex; align-items: center; justify-content: center; color: transparent; border-radius: 8px; cursor: pointer; user-select: none; }
-        .flipped { background: white; color: black; border: 2px solid #ff9933; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
+
+        h1 {
+            color: #d84315;
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitulo {
+            color: #6d4c41;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        /* Painel de estatísticas */
+        .painel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #d84315;
+            min-width: 110px;
+            justify-content: center;
+        }
+
+        .stat span {
+            font-size: 1.2rem;
+        }
+
+        /* Tabuleiro */
+        .grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            perspective: 1000px;
+        }
+
+        /* Cartas */
+        .card {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        .card.flipped,
+        .card.matched {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #ff9933, #e67e22);
+            color: white;
+            font-size: 2rem;
+        }
+
+        .card-front::before {
+            content: "?";
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            border: 3px solid #ff9933;
+        }
+
+        .card.matched .card-back {
+            background: linear-gradient(145deg, #66bb6a, #43a047);
+            border-color: #2e7d32;
+            animation: pulse 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+
+        /* Botões */
+        .botoes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-reiniciar {
+            background: linear-gradient(145deg, #ff9933, #e67e22);
+        }
+
+        .btn-sair {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+        }
+
+        .btn-dificuldade {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+        }
+
+        .btn-dificuldade.ativo {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Modal de vitória */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-overlay.ativo {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: slideUp 0.4s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h2 {
+            color: #d84315;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .modal p {
+            color: #6d4c41;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .modal .botoes {
+            margin-top: 10px;
+        }
+
+        /* Tela de saída */
+        .tela-saida {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #d84315, #e74c3c);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .tela-saida.ativo {
+            display: flex;
+        }
+
+        .tela-saida h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .tela-saida p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+        }
+
+        /* Responsivo */
+        @media (max-width: 600px) {
+            .card { width: 70px; height: 70px; }
+            .card-face { font-size: 1.8rem; }
+            .card-front { font-size: 1.5rem; }
+            h1 { font-size: 1.4rem; }
+        }
     </style>
 </head>
 <body>
 
-<h2>Jogo da Memória: Animais em Inglês 🦁</h2>
-<p>Encontre os pares correspondentes!</p>
-<div class="grid" id="tabuleiro"></div>
+    <h1>🦁 Jogo da Memória: Animais em Inglês</h1>
+    <p class="subtitulo">Encontre os pares correspondentes!</p>
 
-<script>
-    const cartasOriginais = ['🐶', '🐶', '🐱', '🐱', '🦁', '🦁', '🐵', '🐵', '🐸', '🐸', '🦊', '🦊'];
-    // Embaralha as cartas
-    const cartas = cartasOriginais.sort(() => Math.random() - 0.5);
+    <!-- Estatísticas -->
+    <div class="painel">
+        <div class="stat">🎯 Jogadas: <span id="jogadas">0</span></div>
+        <div class="stat">✅ Pares: <span id="pares">0</span></div>
+        <div class="stat">⏱️ Tempo: <span id="tempo">0s</span></div>
+    </div>
 
-    let primeiraCarta = null;
-    let segundaCarta = null;
-    let travado = false;
+    <!-- Tabuleiro -->
+    <div class="grid" id="tabuleiro"></div>
 
-    const tabuleiro = document.getElementById('tabuleiro');
+    <!-- Botões -->
+    <div class="botoes">
+        <button class="btn-reiniciar" onclick="reiniciarJogo()">🔄 Reiniciar</button>
+        <button class="btn-sair" onclick="sairDoJogo()">🚪 Sair</button>
+    </div>
 
-    cartas.forEach((emoji, index) => {
-        const elementoCard = document.createElement('div');
-        elementoCard.classList.add('card');
-        elementoCard.dataset.emoji = emoji;
-        elementoCard.innerText = emoji;
-        elementoCard.addEventListener('click', virarCarta);
-        tabuleiro.appendChild(elementoCard);
-    });
+    <div class="botoes" style="margin-top: 15px;">
+        <button class="btn-dificuldade ativo" data-nivel="facil" onclick="mudarDificuldade('facil', this)">😊 Fácil</button>
+        <button class="btn-dificuldade" data-nivel="medio" onclick="mudarDificuldade('medio', this)">😎 Médio</button>
+        <button class="btn-dificuldade" data-nivel="dificil" onclick="mudarDificuldade('dificil', this)">🔥 Difícil</button>
+    </div>
 
-    function virarCarta() {
-        if (travado || this === primeiraCarta) return;
+    <!-- Modal de vitória -->
+    <div class="modal-overlay" id="modalVitoria">
+        <div class="modal">
+            <h2>🎉 Parabéns!</h2>
+            <p id="mensagemVitoria">Você encontrou todos os pares!</p>
+            <div class="botoes">
+                <button class="btn-reiniciar" onclick="fecharModalEReiniciar()">🔄 Jogar Novamente</button>
+                <button class="btn-sair" onclick="fecharModalESair()">🚪 Sair</button>
+            </div>
+        </div>
+    </div>
 
-        this.classList.add('flipped');
+    <!-- Tela de saída -->
+    <div class="tela-saida" id="telaSaida">
+        <h1>👋 Até logo!</h1>
+        <p>Obrigado por jogar o Jogo da Memória dos Animais!</p>
+        <button class="btn-reiniciar" onclick="voltarAoJogo()">🎮 Voltar a Jogar</button>
+    </div>
 
-        if (!primeiraCarta) {
-            primeiraCarta = this;
-            return;
+    <script>
+        // ===== Configurações =====
+        const niveis = {
+            facil:   { colunas: 4, pares: 8 },
+            medio:   { colunas: 5, pares: 10 },
+            dificil: { colunas: 6, pares: 12 }
+        };
+
+        const todosAnimais = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', 
+                              '🦁', '🐯', '🐮', '🐷', '🐸', '🐵', '🦉', '🦄'];
+
+        // ===== Estado do jogo =====
+        let nivelAtual = 'facil';
+        let primeiraCarta = null;
+        let segundaCarta = null;
+        let travado = false;
+        let paresEncontrados = 0;
+        let jogadas = 0;
+        let totalPares = 0;
+        let cronometro = null;
+        let segundos = 0;
+
+        // ===== Elementos =====
+        const tabuleiro = document.getElementById('tabuleiro');
+        const elJogadas = document.getElementById('jogadas');
+        const elPares = document.getElementById('pares');
+        const elTempo = document.getElementById('tempo');
+        const modalVitoria = document.getElementById('modalVitoria');
+        const mensagemVitoria = document.getElementById('mensagemVitoria');
+        const telaSaida = document.getElementById('telaSaida');
+
+        // ===== Funções auxiliares =====
+        function embaralhar(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
-        segundaCarta = this;
-        verificarPar();
-    }
+        function iniciarCronometro() {
+            pararCronometro();
+            segundos = 0;
+            elTempo.textContent = '0s';
+            cronometro = setInterval(() => {
+                segundos++;
+                elTempo.textContent = segundos + 's';
+            }, 1000);
+        }
 
-    function verificarPar() {
-        let eIgual = primeiraCarta.dataset.emoji === segundaCarta.dataset.emoji;
-        eIgual ? desativarCartas() : desvirarCartas();
-    }
+        function pararCronometro() {
+            if (cronometro) {
+                clearInterval(cronometro);
+                cronometro = null;
+            }
+        }
 
-    function desativarCartas() {
-        primeiraCarta.removeEventListener('click', virarCarta);
-        segundaCarta.removeEventListener('click', virarCarta);
-        resetarTurno();
-    }
+        // ===== Inicialização do jogo =====
+        function iniciarJogo() {
+            const config = niveis[nivelAtual];
 
-    function desvirarCartas() {
-        travado = true;
-        setTimeout(() => {
-            primeiraCarta.classList.remove('flipped');
-            segundaCarta.classList.remove('flipped');
-            resetarTurno();
-        }, 1000);
-    }
+            // Resetar estado
+            primeiraCarta = null;
+            segundaCarta = null;
+            travado = false;
+            paresEncontrados = 0;
+            jogadas = 0;
+            totalPares = config.pares;
+            elJogadas.textContent = '0';
+            elPares.textContent = `0/${totalPares}`;
 
-    function resetarTurno() {
-        [primeiraCarta, segundaCarta] = [null, null];
-        travado = false;
-    }
-</script>
+            // Limpar tabuleiro
+            tabuleiro.innerHTML = '';
+            tabuleiro.style.gridTemplateColumns = `repeat(${config.colunas}, auto)`;
+
+            // Selecionar animais e criar pares
+            const animaisSelecionados = [...todosAnimais]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, config.pares);
+            const cartas = embaralhar([...animaisSelecionados, ...animaisSelecionados]);
+
+            // Criar cartas
+            cartas.forEach((animal) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.animal = animal;
+                card.innerHTML = `
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back">${animal}</div>
+                `;
+                card.addEventListener('click', virarCarta);
+                tabuleiro.appendChild(card);
+            });
+
+            iniciarCronometro();
+        }
+
+        // ===== Lógica de virar carta =====
+        function virarCarta() {
+            if (travado) return;
+            if (this === primeiraCarta) return;
+            if (this.classList.contains('flipped') || this.classList.contains('matched')) return;
+
+            this.classList.add('flipped');
+
+            if (!primeiraCarta) {
+                primeiraCarta = this;
+                return;
+            }
+
+            segundaCarta = this;
+            jogadas++;
+            elJogadas.textContent = jogadas;
+            travado = true;
+
+            verificarPar();
+        }
+
+        function verificarPar() {
+            const ehPar = primeiraCarta.dataset.animal === segundaCarta.dataset.animal;
+
+            if (ehPar) {
+                desabilitarCartas();
+            } else {
+                desvirarCartas();
+            }
+        }
+
+        function desabilitarCartas() {
+            primeiraCarta.classList.add('matched');
+            segundaCarta.classList.add('matched');
+            primeiraCarta.removeEventListener('click', virarCarta);
+            segundaCarta.removeEventListener('click', virarCarta);
+
+            paresEncontrados++;
+            elPares.textContent = `${paresEncontrados}/${totalPares}`;
+            resetarTabuleiro();
+
+            if (paresEncontrados === totalPares) {
+                pararCronometro();
+                setTimeout(mostrarVitoria, 600);
+            }
+        }
+
+        function desvirarCartas() {
+            setTimeout(() => {
+                primeiraCarta.classList.remove('flipped');
+                segundaCarta.classList.remove('flipped');
+                resetarTabuleiro();
+            }, 1000);
+        }
+
+        function resetarTabuleiro() {
+            [primeiraCarta, segundaCarta] = [null, null];
+            travado = false;
+        }
+
+        // ===== Vitória =====
+        function mostrarVitoria() {
+            mensagemVitoria.innerHTML = `
+                Você encontrou todos os <strong>${totalPares} pares</strong>!<br><br>
+                🎯 Jogadas: <strong>${jogadas}</strong><br>
+                ⏱️ Tempo: <strong>${segundos}s</strong>
+            `;
+            modalVitoria.classList.add('ativo');
+        }
+
+        function fecharModalEReiniciar() {
+            modalVitoria.classList.remove('ativo');
+            iniciarJogo();
+        }
+
+        function fecharModalESair() {
+            modalVitoria.classList.remove('ativo');
+            sairDoJogo();
+        }
+
+        // ===== Botões =====
+        function reiniciarJogo() {
+            iniciarJogo();
+        }
+
+        function sairDoJogo() {
+            pararCronometro();
+            telaSaida.classList.add('ativo');
+        }
+
+        function voltarAoJogo() {
+            telaSaida.classList.remove('ativo');
+            iniciarJogo();
+        }
+
+        function mudarDificuldade(nivel, botao) {
+            nivelAtual = nivel;
+            document.querySelectorAll('.btn-dificuldade').forEach(b => b.classList.remove('ativo'));
+            botao.classList.add('ativo');
+            iniciarJogo();
+        }
+
+        // ===== Iniciar automaticamente =====
+        iniciarJogo();
+    </script>
 
 </body>
 </html>

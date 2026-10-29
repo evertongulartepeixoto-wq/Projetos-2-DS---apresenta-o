@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Eco-Herói 🌍</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 620px;
+            width: 100%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        /* Seletor de dificuldade */
+        .dificuldades {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-dificuldade {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 2px solid #c8e6c9;
+            background: #f1f8e9;
+            color: #2e7d32;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-dificuldade:hover {
+            background: #c8e6c9;
+        }
+
+        .btn-dificuldade.ativo {
+            background: linear-gradient(145deg, #66bb6a, #2e7d32);
+            color: white;
+            border-color: #1b5e20;
+            box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.35);
+        }
+
+        /* Barra de progresso */
+        .progresso-wrap {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progresso {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #66bb6a, #2e7d32);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* Info topo */
+        .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .info span { display: flex; align-items: center; gap: 5px; }
+
+        h3#pergunta {
+            color: #1b5e20;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            min-height: 60px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .btn-opcao {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            margin: 10px 0;
+            font-size: 1rem;
+            background: #f1f8e9;
+            color: #1b5e20;
+            border: 2px solid #c8e6c9;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+
+        .btn-opcao:hover:not(:disabled) {
+            background: #c8e6c9;
+            border-color: #66bb6a;
+            transform: translateX(5px);
+        }
+
+        .btn-opcao:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        .btn-opcao.correta {
+            background: #66bb6a !important;
+            color: white !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .btn-opcao.errada {
+            background: #ef5350 !important;
+            color: white !important;
+            border-color: #c62828 !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        /* Feedback */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .feedback.ok { background: #e8f5e9; color: #2e7d32; border-left: 5px solid #66bb6a; }
+        .feedback.err { background: #ffebee; color: #c62828; border-left: 5px solid #ef5350; }
+
+        .btn-proximo {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: linear-gradient(145deg, #2e7d32, #1b5e20);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-proximo:hover { transform: translateY(-2px); }
+
+        /* Botões de ação (reiniciar / sair) */
+        .acoes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+
+        .btn-reiniciar { background: linear-gradient(145deg, #66bb6a, #2e7d32); }
+        .btn-sair      { background: linear-gradient(145deg, #ef5350, #c62828); }
+
+        /* Tela final */
+        .tela-final { text-align: center; display: none; }
+        .tela-final.ativa { display: block; animation: fadeIn 0.5s; }
+
+        .medalha { font-size: 5rem; margin: 15px 0; }
+
+        .resultado {
+            font-size: 1.15rem;
+            color: #2e7d32;
+            margin: 15px 0;
+            line-height: 1.7;
+        }
+
+        /* Tela de saída */
+        .tela-saida {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .tela-saida.ativa { display: flex; }
+        .tela-saida h1 { font-size: 3rem; margin-bottom: 15px; }
+        .tela-saida p { font-size: 1.2rem; margin-bottom: 25px; max-width: 400px; }
+
+        @media (max-width: 500px) {
+            .quiz-container { padding: 20px; }
+            h2 { font-size: 1.4rem; }
+            h3#pergunta { font-size: 1.05rem; }
+            .medalha { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quizContainer">
+        <h2>🌍 Quiz Eco-Herói</h2>
+
+        <!-- Seletor de dificuldade -->
+        <div class="dificuldades">
+            <button class="btn-dificuldade ativo" data-nivel="facil"   onclick="mudarDificuldade('facil', this)">😊 Fácil</button>
+            <button class="btn-dificuldade"       data-nivel="medio"   onclick="mudarDificuldade('medio', this)">😎 Médio</button>
+            <button class="btn-dificuldade"       data-nivel="dificil" onclick="mudarDificuldade('dificil', this)">🔥 Difícil</button>
+        </div>
+
+        <div class="info">
+            <span>📝 <span id="contador">1 / 3</span></span>
+            <span>⭐ <span id="pontuacao">0</span> pts</span>
+            <span>⏱️ <span id="tempo">0s</span></span>
+            <span>🎚️ <span id="nivelLabel">Fácil</span></span>
+        </div>
+
+        <div class="progresso-wrap">
+            <div class="progresso" id="progresso"></div>
+        </div>
+
+        <h3 id="pergunta">Carregando...</h3>
+        <div id="opcoes"></div>
+
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-proximo" id="btnProximo" onclick="proximaPergunta()">Próxima ➡️</button>
+
+        <!-- Botões de ação -->
+        <div class="acoes">
+            <button class="btn btn-reiniciar" onclick="reiniciarQuiz()">🔄 Reiniciar</button>
+            <button class="btn btn-sair" onclick="sairDoQuiz()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- Tela final -->
+    <div class="quiz-container tela-final" id="telaFinal">
+        <h2>Quiz Concluído! 🌱</h2>
+        <div class="medalha" id="medalha">🏆</div>
+        <div class="resultado" id="resultado"></div>
+        <div class="acoes">
+            <button class="btn btn-reiniciar" onclick="reiniciarQuiz()">🔄 Jogar Novamente</button>
+            <button class="btn btn-sair" onclick="sairDoQuiz()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- Tela de saída -->
+    <div class="tela-saida" id="telaSaida">
+        <h1>👋 Até logo, Eco-Herói!</h1>
+        <p>Continue cuidando do planeta. Cada atitude conta! 🌎</p>
+        <button class="btn btn-reiniciar" onclick="voltarAoQuiz()">🎮 Voltar ao Quiz</button>
+    </div>
+
+    <script>
+        // ===== Banco de perguntas por dificuldade =====
+        const bancoPerguntas = {
+            facil: [
+                {
+                    q: "Qual lixo deve ser descartado na lixeira azul?",
+                    o: ["Plástico", "Papel", "Vidro", "Metal"],
+                    a: 1,
+                    explicacao: "A lixeira azul é destinada ao PAPEL e papelão."
+                },
+                {
+                    q: "Qual dessas ações ajuda a poupar água?",
+                    o: ["Escovar dentes com a torneira aberta", "Lavar calçada com mangueira", "Reduzir o tempo no banho", "Deixar torneira pingando"],
+                    a: 2,
+                    explicacao: "Reduzir o tempo no banho economiza litros de água por dia."
+                },
+                {
+                    q: "Qual é a cor da lixeira para descartar VIDRO?",
+                    o: ["Azul", "Vermelha", "Verde", "Amarela"],
+                    a: 2,
+                    explicacao: "A lixeira VERDE é para vidro."
+                },
+                {
+                    q: "O que significa 'reciclar'?",
+                    o: ["Jogar tudo no lixo comum", "Transformar materiais usados em novos produtos", "Queimar resíduos", "Enterrar o lixo"],
+                    a: 1,
+                    explicacao: "Reciclar é transformar materiais usados em novos produtos, economizando recursos naturais."
+                },
+                {
+                    q: "Qual desses materiais NÃO é reciclável?",
+                    o: ["Papel", "Vidro", "Alumínio", "Fralda descartável"],
+                    a: 3,
+                    explicacao: "Fraldas descartáveis não são recicláveis — devem ir para o lixo comum."
+                }
+            ],
+            medio: [
+                {
+                    q: "Quanto tempo uma garrafa PET pode levar para se decompor?",
+                    o: ["10 anos", "100 anos", "Mais de 400 anos", "1 ano"],
+                    a: 2,
+                    explicacao: "Uma garrafa PET pode levar mais de 400 anos para se decompor na natureza."
+                },
+                {
+                    q: "O que significa a sigla '5 R's' da sustentabilidade?",
+                    o: [
+                        "Reduzir, Reutilizar, Reciclar, Repensar, Recusar",
+                        "Reciclar, Reusar, Reformar, Reparar, Remendar",
+                        "Reduzir, Remover, Reciclar, Replantar, Resgatar",
+                        "Reutilizar, Reformar, Reciclar, Respeitar, Restaurar"
+                    ],
+                    a: 0,
+                    explicacao: "Os 5 R's são: Reduzir, Reutilizar, Reciclar, Repensar e Recusar."
+                },
+                {
+                    q: "Qual é o principal gás responsável pelo efeito estufa?",
+                    o: ["Oxigênio (O₂)", "Nitrogênio (N₂)", "Gás carbônico (CO₂)", "Hidrogênio (H₂)"],
+                    a: 2,
+                    explicacao: "O CO₂ é o principal gás do efeito estufa, emitido pela queima de combustíveis fósseis."
+                },
+                {
+                    q: "Qual é a cor da lixeira para PLÁSTICO?",
+                    o: ["Azul", "Vermelha", "Verde", "Amarela"],
+                    a: 1,
+                    explicacao: "A lixeira VERMELHA é destinada ao plástico."
+                },
+                {
+                    q: "O que é 'desmatamento'?",
+                    o: [
+                        "Plantio de árvores em áreas urbanas",
+                        "Remoção da cobertura vegetal de uma área",
+                        "Criação de parques naturais",
+                        "Reciclagem de madeira"
+                    ],
+                    a: 1,
+                    explicacao: "Desmatamento é a remoção da cobertura vegetal, geralmente para uso agrícola ou urbano."
+                }
+            ],
+            dificil: [
+                {
+                    q: "Qual é o nome do acordo internacional de 2015 sobre mudanças climáticas?",
+                    o: ["Protocolo de Kyoto", "Acordo de Paris", "Convenção de Viena", "Tratado de Montreal"],
+                    a: 1,
+                    explicacao: "O Acordo de Paris (2015) visa limitar o aquecimento global abaixo de 2°C."
+                },
+                {
+                    q: "Qual desses NÃO é um gás do efeito estufa?",
+                    o: ["Metano (CH₄)", "Óxido nitroso (N₂O)", "Ozônio (O₃)", "Oxigênio (O₂)"],
+                    a: 3,
+                    explicacao: "O oxigênio (O₂) não é considerado gás do efeito estufa, apesar de essencial à vida."
+                },
+                {
+                    q: "O que significa 'pegada de carbono'?",
+                    o: [
+                        "A marca deixada por animais no solo",
+                        "A quantidade de CO₂ emitida por uma pessoa, empresa ou produto",
+                        "O rastro de carvão em áreas queimadas",
+                        "A quantidade de carbono presente no solo"
+                    ],
+                    a: 1,
+                    explicacao: "Pegada de carbono é a soma de todas as emissões de CO₂ geradas por uma atividade."
+                },
+                {
+                    q: "Qual é a principal causa da chuva ácida?",
+                    o: [
+                        "Emissão de SO₂ e NOₓ por indústrias e veículos",
+                        "Excesso de vapor d'água na atmosfera",
+                        "Evaporação de oceanos",
+                        "Aumento do oxigênio na atmosfera"
+                    ],
+                    a: 0,
+                    explicacao: "SO₂ e NOₓ reagem com a água na atmosfera, formando ácidos que caem como chuva ácida."
+                },
+                {
+                    q: "O que é 'economia circular'?",
+                    o: [
+                        "Um sistema onde os resíduos são a principal fonte de renda",
+                        "Um modelo que mantém materiais em uso pelo maior tempo possível",
+                        "Um tipo de mercado financeiro globalizado",
+                        "Uma política de exportação de resíduos"
+                    ],
+                    a: 1,
+                    explicacao: "Economia circular propõe reduzir, reutilizar e reciclar, mantendo materiais em uso o máximo possível."
+                }
+            ]
+        };
+
+        // ===== Estado =====
+        let nivelAtual    = 'facil';
+        let perguntas     = bancoPerguntas[nivelAtual];
+        let indiceAtual   = 0;
+        let pontuacao     = 0;
+        let respondeu     = false;
+        let segundos      = 0;
+        let cronometro    = null;
+
+        // ===== Elementos =====
+        const elPergunta    = document.getElementById('pergunta');
+        const elOpcoes      = document.getElementById('opcoes');
+        const elFeedback    = document.getElementById('feedback');
+        const elProgresso   = document.getElementById('progresso');
+        const elContador    = document.getElementById('contador');
+        const elPontuacao   = document.getElementById('pontuacao');
+        const elTempo       = document.getElementById('tempo');
+        const elNivelLabel  = document.getElementById('nivelLabel');
+        const btnProximo    = document.getElementById('btnProximo');
+        const quizContainer = document.getElementById('quizContainer');
+        const telaFinal     = document.getElementById('telaFinal');
+        const telaSaida     = document.getElementById('telaSaida');
+        const elMedalha     = document.getElementById('medalha');
+        const elResultado   = document.getElementById('resultado');
+
+        // ===== Cronômetro =====
+        function iniciarCronometro() {
+            pararCronometro();
+            segundos = 0;
+            elTempo.textContent = '0s';
+            cronometro = setInterval(() => {
+                segundos++;
+                elTempo.textContent = segundos + 's';
+            }, 1000);
+        }
+
+        function pararCronometro() {
+            if (cronometro) {
+                clearInterval(cronometro);
+                cronometro = null;
+            }
+        }
+
+        // ===== Carregar pergunta =====
+        function carregarPergunta() {
+            respondeu = false;
+            elFeedback.style.display = 'none';
+            btnProximo.style.display = 'none';
+
+            elContador.textContent = `${indiceAtual + 1} / ${perguntas.length}`;
+            elProgresso.style.width = `${(indiceAtual / perguntas.length) * 100}%`;
+
+            const item = perguntas[indiceAtual];
+            elPergunta.textContent = item.q;
+
+            elOpcoes.innerHTML = '';
+            item.o.forEach((opcao, index) => {
+                const botao = document.createElement('button');
+                botao.className = 'btn-opcao';
+                botao.textContent = opcao;
+                botao.onclick = () => verificarResposta(index, botao);
+                elOpcoes.appendChild(botao);
+            });
+        }
+
+        // ===== Verificar resposta =====
+        function verificarResposta(escolha, botaoClicado) {
+            if (respondeu) return;
+            respondeu = true;
+
+            const item = perguntas[indiceAtual];
+            const acertou = escolha === item.a;
+
+            document.querySelectorAll('.btn-opcao').forEach(b => b.disabled = true);
+
+            if (acertou) {
+                botaoClicado.classList.add('correta');
+                pontuacao += 10;
+                elPontuacao.textContent = pontuacao;
+                elFeedback.className = 'feedback ok';
+                elFeedback.innerHTML = `✅ <strong>Acertou!</strong> ${item.explicacao}`;
+            } else {
+                botaoClicado.classList.add('errada');
+                document.querySelectorAll('.btn-opcao')[item.a].classList.add('correta');
+                elFeedback.className = 'feedback err';
+                elFeedback.innerHTML = `❌ <strong>Errou!</strong> A resposta certa é: <em>${item.o[item.a]}</em>.<br>${item.explicacao}`;
+            }
+
+            elFeedback.style.display = 'block';
+            btnProximo.style.display = 'block';
+            btnProximo.textContent = (indiceAtual === perguntas.length - 1)
+                ? 'Ver Resultado 🏆'
+                : 'Próxima ➡️';
+        }
+
+        // ===== Próxima pergunta =====
+        function proximaPergunta() {
+            indiceAtual++;
+            if (indiceAtual >= perguntas.length) {
+                finalizarQuiz();
+            } else {
+                carregarPergunta();
+            }
+        }
+
+        // ===== Finalizar =====
+        function finalizarQuiz() {
+            pararCronometro();
+            quizContainer.style.display = 'none';
+            telaFinal.classList.add('ativa');
+            elProgresso.style.width = '100%';
+
+            const acertos = pontuacao / 10;
+            const total = perguntas.length;
+            const porcentagem = (acertos / total) * 100;
+
+            let medalha, mensagem;
+            if (porcentagem === 100)    { medalha = '🥇'; mensagem = 'Perfeito! Você é um Eco-Herói lendário!'; }
+            else if (porcentagem >= 80) { medalha = '🥈'; mensagem = 'Excelente! Você entende muito do assunto!'; }
+            else if (porcentagem >= 60) { medalha = '🥉'; mensagem = 'Muito bom! Continue aprendendo!'; }
+            else if (porcentagem >= 40) { medalha = '🌱'; mensagem = 'Bom começo! Que tal tentar de novo?'; }
+            else                        { medalha = '🌍'; mensagem = 'Não desista! O planeta precisa de você!'; }
+
+            elMedalha.textContent = medalha;
+            elResultado.innerHTML = `
+                <strong>${acertos} de ${total}</strong> acertos<br>
+                ⭐ Pontuação: <strong>${pontuacao}</strong> pontos<br>
+                ⏱️ Tempo total: <strong>${segundos}s</strong><br>
+                🎚️ Nível: <strong>${elNivelLabel.textContent}</strong><br><br>
+                <em>${mensagem}</em>
+            `;
+        }
+
+        // ===== Mudar dificuldade =====
+        function mudarDificuldade(nivel, botao) {
+            nivelAtual = nivel;
+            perguntas = bancoPerguntas[nivel];
+
+            const labels = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil' };
+            elNivelLabel.textContent = labels[nivel];
+
+            document.querySelectorAll('.btn-dificuldade').forEach(b => b.classList.remove('ativo'));
+            botao.classList.add('ativo');
+
+            reiniciarQuiz();
+        }
+
+        // ===== Botões =====
+        function reiniciarQuiz() {
+            indiceAtual = 0;
+            pontuacao = 0;
+            elPontuacao.textContent = '0';
+            elProgresso.style.width = '0%';
+            telaFinal.classList.remove('ativa');
+            quizContainer.style.display = 'block';
+            iniciarCronometro();
+            carregarPergunta();
+        }
+
+        function sairDoQuiz() {
+            pararCronometro();
+            telaSaida.classList.add('ativo');
+        }
+
+        function voltarAoQuiz() {
+            telaSaida.classList.remove('ativo');
+            reiniciarQuiz();
+        }
+
+        // ===== Iniciar =====
+        iniciarCronometro();
+        carregarPergunta();
+    </script>
+
+</body>
+</html>
